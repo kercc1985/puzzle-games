@@ -1,0 +1,1147 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sudoku Game</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 600px;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            color: #667eea;
+            font-size: 2em;
+        }
+
+        .header-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .back-button, .lang-button {
+            padding: 8px 15px;
+            background: #999;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            text-decoration: none;
+            transition: all 0.3s;
+        }
+
+        .back-button:hover, .lang-button:hover {
+            background: #777;
+            transform: translateY(-2px);
+        }
+
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
+            justify-content: center;
+        }
+
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            background: #667eea;
+            color: white;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+            font-weight: bold;
+        }
+
+        button:hover {
+            background: #764ba2;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        button.download-btn {
+            background: #4CAF50;
+        }
+
+        button.download-btn:hover {
+            background: #45a049;
+        }
+
+        select {
+            padding: 10px;
+            border-radius: 8px;
+            border: 2px solid #667eea;
+            font-size: 14px;
+            cursor: pointer;
+            background: white;
+        }
+
+        .info {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 15px;
+            font-size: 16px;
+            color: #555;
+        }
+
+        .timer {
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .sudoku-grid {
+            display: grid;
+            grid-template-columns: repeat(9, 1fr);
+            gap: 0;
+            width: 100%;
+            max-width: 450px;
+            margin: 0 auto;
+            border: 3px solid #333;
+            background: #333;
+        }
+
+        .cell {
+            aspect-ratio: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            font-weight: bold;
+            cursor: pointer;
+            background: white;
+            border: 1px solid #ddd;
+            transition: all 0.2s;
+        }
+
+        .cell:hover:not(.fixed) {
+            background: #f0f0f0;
+        }
+
+        .cell.selected {
+            background: #e3f2fd;
+        }
+
+        .cell.fixed {
+            background: #f5f5f5;
+            color: #333;
+        }
+
+        .cell.user-input {
+            color: #2196F3;
+        }
+
+        .cell.error {
+            background: #ffebee;
+            color: #f44336;
+        }
+
+        .cell:nth-child(9n+3),
+        .cell:nth-child(9n+6) {
+            border-right: 2px solid #333;
+        }
+
+        .cell:nth-child(n+19):nth-child(-n+27),
+        .cell:nth-child(n+46):nth-child(-n+54) {
+            border-bottom: 2px solid #333;
+        }
+
+        .message {
+            text-align: center;
+            margin-top: 15px;
+            font-size: 18px;
+            font-weight: bold;
+            color: #4CAF50;
+            min-height: 25px;
+        }
+
+        /* Modal styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            animation: fadeIn 0.3s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .modal-content {
+            background-color: white;
+            margin: 10% auto;
+            padding: 30px;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            animation: slideIn 0.3s;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateY(-50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .modal-header {
+            font-size: 1.5em;
+            color: #667eea;
+            margin-bottom: 20px;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        .modal-section {
+            margin-bottom: 25px;
+        }
+
+        .modal-section-title {
+            font-size: 1.1em;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 12px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #667eea;
+        }
+
+        .modal-options {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .modal-option {
+            display: flex;
+            align-items: center;
+            padding: 12px 15px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .modal-option:hover {
+            border-color: #667eea;
+            background-color: #f5f5ff;
+        }
+
+        .modal-option input[type="radio"] {
+            margin-right: 12px;
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+
+        .option-label {
+            flex: 1;
+        }
+
+        .option-title {
+            font-weight: bold;
+            font-size: 1em;
+            margin-bottom: 3px;
+        }
+
+        .option-description {
+            font-size: 0.85em;
+            color: #666;
+        }
+
+        .size-slider-container {
+            padding: 15px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            background-color: #f9f9f9;
+        }
+
+        .slider-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .slider-value {
+            color: #667eea;
+            font-size: 1.1em;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            height: 6px;
+            border-radius: 3px;
+            background: linear-gradient(to right, #667eea, #764ba2);
+            outline: none;
+            opacity: 0.8;
+            transition: opacity 0.2s;
+        }
+
+        input[type="range"]:hover {
+            opacity: 1;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #667eea;
+            cursor: pointer;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+        }
+
+        input[type="range"]::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #667eea;
+            cursor: pointer;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+            border: none;
+        }
+
+        .size-presets {
+            display: flex;
+            gap: 8px;
+            margin-top: 10px;
+            flex-wrap: wrap;
+        }
+
+        .preset-btn {
+            padding: 5px 12px;
+            font-size: 0.85em;
+            background: #e0e0e0;
+            color: #333;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .preset-btn:hover {
+            background: #667eea;
+            color: white;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .modal-buttons button {
+            flex: 1;
+        }
+
+        .cancel-btn {
+            background: #999 !important;
+        }
+
+        .cancel-btn:hover {
+            background: #777 !important;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 15px;
+            }
+
+            h1 {
+                font-size: 1.5em;
+            }
+
+            .cell {
+                font-size: 16px;
+            }
+
+            button, .back-button, .lang-button {
+                padding: 8px 15px;
+                font-size: 12px;
+            }
+
+            .modal-content {
+                margin: 5% auto;
+                padding: 20px;
+            }
+
+            .modal-header {
+                font-size: 1.3em;
+            }
+
+            .modal-section-title {
+                font-size: 1em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1 data-en="🎮 Sudoku Game" data-zh="🎮 数独游戏">🎮 Sudoku Game</h1>
+            <div class="header-buttons">
+                <button class="lang-button" onclick="toggleLanguage()">
+                    <span id="langText">中文</span>
+                </button>
+                <a href="index.html" class="back-button" data-en="← Back" data-zh="← 返回">← Back</a>
+            </div>
+        </div>
+        
+        <div class="controls">
+            <select id="difficulty">
+                <option value="easy" data-en="Easy" data-zh="简单">Easy</option>
+                <option value="medium" data-en="Medium" data-zh="中等">Medium</option>
+                <option value="hard" data-en="Hard" data-zh="困难">Hard</option>
+                <option value="expert" data-en="Expert" data-zh="专家">Expert</option>
+            </select>
+            <button onclick="newGame()" data-en="New Game" data-zh="新游戏">New Game</button>
+            <button onclick="checkSolution()" data-en="Check" data-zh="检查">Check</button>
+            <button onclick="showHint()" data-en="Hint" data-zh="提示">Hint</button>
+            <button onclick="solvePuzzle()" data-en="Show Answer" data-zh="显示答案">Show Answer</button>
+            <button onclick="clearInputs()" data-en="Clear" data-zh="清空">Clear</button>
+        </div>
+
+        <div class="controls">
+            <button class="download-btn" onclick="showDownloadModal()">
+                <span data-en="📄 Download PDF" data-zh="📄 下载PDF">📄 Download PDF</span>
+            </button>
+        </div>
+
+        <div class="info">
+            <div><span data-en="Difficulty:" data-zh="难度：">Difficulty:</span> <span id="current-difficulty">Easy</span></div>
+            <div class="timer">⏱️ <span id="timer">00:00</span></div>
+        </div>
+
+        <div class="sudoku-grid" id="grid"></div>
+        
+        <div class="message" id="message"></div>
+    </div>
+
+    <!-- Download Modal -->
+    <div id="downloadModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header" data-en="Download Options" data-zh="下载选项">Download Options</div>
+            
+            <!-- Grid Size Section -->
+            <div class="modal-section">
+                <div class="modal-section-title" data-en="Grid Size on Paper" data-zh="纸上网格大小">Grid Size on Paper</div>
+                <div class="size-slider-container">
+                    <div class="slider-label">
+                        <span data-en="Adjust sudoku grid size:" data-zh="调整数独网格大小：">Adjust sudoku grid size:</span>
+                        <span class="slider-value" id="sizeValue">60%</span>
+                    </div>
+                    <input type="range" id="gridSizeSlider" min="30" max="90" value="60" step="5">
+                    <div class="size-presets">
+                        <button class="preset-btn" onclick="setGridSize(40)">
+                            <span data-en="Small (40%)" data-zh="小 (40%)">Small (40%)</span>
+                        </button>
+                        <button class="preset-btn" onclick="setGridSize(60)">
+                            <span data-en="Medium (60%)" data-zh="中 (60%)">Medium (60%)</span>
+                        </button>
+                        <button class="preset-btn" onclick="setGridSize(80)">
+                            <span data-en="Large (80%)" data-zh="大 (80%)">Large (80%)</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Content Section -->
+            <div class="modal-section">
+                <div class="modal-section-title" data-en="Content" data-zh="内容">Content</div>
+                <div class="modal-options">
+                    <label class="modal-option">
+                        <input type="radio" name="downloadOption" value="puzzle" checked>
+                        <div class="option-label">
+                            <div class="option-title" data-en="Puzzle Only" data-zh="仅题目">Puzzle Only</div>
+                            <div class="option-description" data-en="Download only the puzzle without the solution" data-zh="仅下载题目，不包含答案">Download only the puzzle without the solution</div>
+                        </div>
+                    </label>
+                    <label class="modal-option">
+                        <input type="radio" name="downloadOption" value="both">
+                        <div class="option-label">
+                            <div class="option-title" data-en="Puzzle + Solution" data-zh="题目 + 答案">Puzzle + Solution</div>
+                            <div class="option-description" data-en="Download puzzle with solution on separate page" data-zh="下载题目及答案（答案在单独页面）">Download puzzle with solution on separate page</div>
+                        </div>
+                    </label>
+                </div>
+            </div>
+
+            <div class="modal-buttons">
+                <button class="cancel-btn" onclick="closeDownloadModal()" data-en="Cancel" data-zh="取消">Cancel</button>
+                <button class="download-btn" onclick="confirmDownload()" data-en="Download" data-zh="下载">Download</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+    <script>
+        let puzzle = [];
+        let solution = [];
+        let selectedCell = null;
+        let timerInterval = null;
+        let startTime = null;
+        let gameCompleted = false;
+        let currentLang = 'en';
+
+        const translations = {
+            en: {
+                easy: 'Easy',
+                medium: 'Medium',
+                hard: 'Hard',
+                expert: 'Expert',
+                errorsFound: 'Errors found! Check the red cells.',
+                perfect: 'Perfect! Keep going!',
+                soFarGood: 'So far so good!',
+                hintAdded: 'Hint added!',
+                answerRevealed: 'Answer revealed!',
+                congratulations: 'Congratulations! Time:',
+                pdfDownloaded: 'PDF downloaded!',
+                sudokuPuzzle: 'Sudoku Puzzle',
+                sudokuSolution: 'Sudoku Solution',
+                difficulty: 'Difficulty:',
+                generated: 'Generated:',
+                gridSize: 'Grid Size:',
+                puzzle: 'Puzzle:',
+                solution: 'Solution:'
+            },
+            zh: {
+                easy: '简单',
+                medium: '中等',
+                hard: '困难',
+                expert: '专家',
+                errorsFound: '发现错误！检查红色格子。',
+                perfect: '完美！继续加油！',
+                soFarGood: '目前做得很好！',
+                hintAdded: '已添加提示！',
+                answerRevealed: '答案已显示！',
+                congratulations: '恭喜！用时：',
+                pdfDownloaded: 'PDF已下载！',
+                sudokuPuzzle: '数独题目',
+                sudokuSolution: '数独答案',
+                difficulty: '难度：',
+                generated: '生成时间：',
+                gridSize: '网格大小：',
+                puzzle: '题目：',
+                solution: '答案：'
+            }
+        };
+
+        // Load saved language preference
+        window.addEventListener('DOMContentLoaded', () => {
+            const savedLang = localStorage.getItem('preferredLanguage') || 'en';
+            if (savedLang === 'zh') {
+                currentLang = 'en';
+                toggleLanguage();
+            }
+        });
+
+        function toggleLanguage() {
+            currentLang = currentLang === 'en' ? 'zh' : 'en';
+            localStorage.setItem('preferredLanguage', currentLang);
+            
+            document.getElementById('langText').textContent = currentLang === 'en' ? '中文' : 'English';
+            
+            document.querySelectorAll('[data-en][data-zh]').forEach(element => {
+                const text = element.getAttribute(`data-${currentLang}`);
+                if (element.tagName === 'OPTION') {
+                    element.textContent = text;
+                } else if (element.tagName === 'BUTTON' || element.tagName === 'A' || element.tagName === 'SPAN') {
+                    if (element.querySelector('span[data-en]')) {
+                        // Skip if has child span with data attributes
+                    } else {
+                        element.textContent = text;
+                    }
+                } else {
+                    element.textContent = text;
+                }
+            });
+
+            // Update difficulty display
+            updateDifficultyDisplay();
+        }
+
+        function updateDifficultyDisplay() {
+            const difficulty = document.getElementById('difficulty').value;
+            const difficultyText = translations[currentLang][difficulty];
+            document.getElementById('current-difficulty').textContent = difficultyText;
+        }
+
+        function init() {
+            createGrid();
+            newGame();
+            initSlider();
+        }
+
+        function initSlider() {
+            const slider = document.getElementById('gridSizeSlider');
+            const sizeValue = document.getElementById('sizeValue');
+            
+            slider.addEventListener('input', function() {
+                sizeValue.textContent = this.value + '%';
+            });
+        }
+
+        function setGridSize(value) {
+            const slider = document.getElementById('gridSizeSlider');
+            const sizeValue = document.getElementById('sizeValue');
+            slider.value = value;
+            sizeValue.textContent = value + '%';
+        }
+
+        function createGrid() {
+            const grid = document.getElementById('grid');
+            grid.innerHTML = '';
+            for (let i = 0; i < 81; i++) {
+                const cell = document.createElement('div');
+                cell.className = 'cell';
+                cell.dataset.index = i;
+                cell.addEventListener('click', () => selectCell(cell));
+                grid.appendChild(cell);
+            }
+        }
+
+        function generateSolution() {
+            const board = Array(9).fill().map(() => Array(9).fill(0));
+            fillBoard(board);
+            return board;
+        }
+
+        function fillBoard(board) {
+            const empty = findEmpty(board);
+            if (!empty) return true;
+
+            const [row, col] = empty;
+            const numbers = shuffle([1, 2, 3, 4, 5, 6, 7, 8, 9]);
+
+            for (let num of numbers) {
+                if (isValid(board, row, col, num)) {
+                    board[row][col] = num;
+                    if (fillBoard(board)) return true;
+                    board[row][col] = 0;
+                }
+            }
+            return false;
+        }
+
+        function findEmpty(board) {
+            for (let i = 0; i < 9; i++) {
+                for (let j = 0; j < 9; j++) {
+                    if (board[i][j] === 0) return [i, j];
+                }
+            }
+            return null;
+        }
+
+        function isValid(board, row, col, num) {
+            for (let x = 0; x < 9; x++) {
+                if (board[row][x] === num) return false;
+            }
+
+            for (let x = 0; x < 9; x++) {
+                if (board[x][col] === num) return false;
+            }
+
+            const startRow = Math.floor(row / 3) * 3;
+            const startCol = Math.floor(col / 3) * 3;
+            for (let i = 0; i < 3; i++) {
+                for (let j = 0; j < 3; j++) {
+                    if (board[startRow + i][startCol + j] === num) return false;
+                }
+            }
+
+            return true;
+        }
+
+        function shuffle(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        function createPuzzle(solution, difficulty) {
+            const difficulties = {
+                easy: 35,
+                medium: 45,
+                hard: 52,
+                expert: 60
+            };
+
+            const cellsToRemove = difficulties[difficulty];
+            const puzzle = solution.map(row => [...row]);
+            let removed = 0;
+
+            while (removed < cellsToRemove) {
+                const row = Math.floor(Math.random() * 9);
+                const col = Math.floor(Math.random() * 9);
+                if (puzzle[row][col] !== 0) {
+                    puzzle[row][col] = 0;
+                    removed++;
+                }
+            }
+
+            return puzzle;
+        }
+
+        function newGame() {
+            gameCompleted = false;
+            document.getElementById('message').textContent = '';
+            
+            const difficulty = document.getElementById('difficulty').value;
+            updateDifficultyDisplay();
+
+            solution = generateSolution();
+            puzzle = createPuzzle(solution, difficulty);
+
+            renderGrid();
+            startTimer();
+        }
+
+        function renderGrid() {
+            const cells = document.querySelectorAll('.cell');
+            cells.forEach((cell, index) => {
+                const row = Math.floor(index / 9);
+                const col = index % 9;
+                const value = puzzle[row][col];
+
+                cell.textContent = value || '';
+                cell.classList.remove('fixed', 'user-input', 'error', 'selected');
+
+                if (value !== 0) {
+                    cell.classList.add('fixed');
+                    cell.dataset.fixed = 'true';
+                } else {
+                    cell.dataset.fixed = 'false';
+                }
+            });
+        }
+
+        function selectCell(cell) {
+            if (gameCompleted) return;
+            if (cell.dataset.fixed === 'true') return;
+
+            document.querySelectorAll('.cell').forEach(c => c.classList.remove('selected'));
+            cell.classList.add('selected');
+            selectedCell = cell;
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (!selectedCell || gameCompleted) return;
+            if (selectedCell.dataset.fixed === 'true') return;
+
+            if (e.key >= '1' && e.key <= '9') {
+                selectedCell.textContent = e.key;
+                selectedCell.classList.add('user-input');
+                selectedCell.classList.remove('error');
+                
+                const index = parseInt(selectedCell.dataset.index);
+                const row = Math.floor(index / 9);
+                const col = index % 9;
+                puzzle[row][col] = parseInt(e.key);
+
+                checkCompletion();
+            } else if (e.key === 'Delete' || e.key === 'Backspace') {
+                selectedCell.textContent = '';
+                selectedCell.classList.remove('user-input', 'error');
+                
+                const index = parseInt(selectedCell.dataset.index);
+                const row = Math.floor(index / 9);
+                const col = index % 9;
+                puzzle[row][col] = 0;
+            }
+        });
+
+        function checkSolution() {
+            if (gameCompleted) return;
+
+            let hasError = false;
+            const cells = document.querySelectorAll('.cell');
+            
+            cells.forEach((cell, index) => {
+                const row = Math.floor(index / 9);
+                const col = index % 9;
+                const value = puzzle[row][col];
+
+                if (value !== 0 && value !== solution[row][col]) {
+                    cell.classList.add('error');
+                    hasError = true;
+                } else {
+                    cell.classList.remove('error');
+                }
+            });
+
+            if (hasError) {
+                showMessage(translations[currentLang].errorsFound, '#f44336');
+            } else if (isPuzzleComplete()) {
+                showMessage(translations[currentLang].perfect, '#4CAF50');
+            } else {
+                showMessage(translations[currentLang].soFarGood, '#2196F3');
+            }
+        }
+
+        function showHint() {
+            if (gameCompleted) return;
+
+            const emptyCells = [];
+            const cells = document.querySelectorAll('.cell');
+
+            cells.forEach((cell, index) => {
+                const row = Math.floor(index / 9);
+                const col = index % 9;
+                if (puzzle[row][col] === 0) {
+                    emptyCells.push({ cell, row, col, index });
+                }
+            });
+
+            if (emptyCells.length === 0) return;
+
+            const random = emptyCells[Math.floor(Math.random() * emptyCells.length)];
+            const value = solution[random.row][random.col];
+            
+            random.cell.textContent = value;
+            random.cell.classList.add('user-input');
+            puzzle[random.row][random.col] = value;
+
+            showMessage(translations[currentLang].hintAdded, '#FF9800');
+            checkCompletion();
+        }
+
+        function solvePuzzle() {
+            const cells = document.querySelectorAll('.cell');
+            cells.forEach((cell, index) => {
+                const row = Math.floor(index / 9);
+                const col = index % 9;
+                
+                if (cell.dataset.fixed !== 'true') {
+                    cell.textContent = solution[row][col];
+                    cell.classList.add('user-input');
+                    cell.classList.remove('error');
+                }
+                puzzle[row][col] = solution[row][col];
+            });
+
+            gameCompleted = true;
+            stopTimer();
+            showMessage(translations[currentLang].answerRevealed, '#9C27B0');
+        }
+
+        function clearInputs() {
+            if (gameCompleted) return;
+
+            const cells = document.querySelectorAll('.cell');
+            cells.forEach((cell, index) => {
+                if (cell.dataset.fixed !== 'true') {
+                    cell.textContent = '';
+                    cell.classList.remove('user-input', 'error');
+                    
+                    const row = Math.floor(index / 9);
+                    const col = index % 9;
+                    puzzle[row][col] = 0;
+                }
+            });
+
+            document.getElementById('message').textContent = '';
+        }
+
+        function isPuzzleComplete() {
+            for (let i = 0; i < 9; i++) {
+                for (let j = 0; j < 9; j++) {
+                    if (puzzle[i][j] === 0) return false;
+                }
+            }
+            return true;
+        }
+
+        function checkCompletion() {
+            if (!isPuzzleComplete()) return;
+
+            let isCorrect = true;
+            for (let i = 0; i < 9; i++) {
+                for (let j = 0; j < 9; j++) {
+                    if (puzzle[i][j] !== solution[i][j]) {
+                        isCorrect = false;
+                        break;
+                    }
+                }
+                if (!isCorrect) break;
+            }
+
+            if (isCorrect) {
+                gameCompleted = true;
+                stopTimer();
+                const time = document.getElementById('timer').textContent;
+                showMessage(`${translations[currentLang].congratulations} ${time}`, '#4CAF50');
+            }
+        }
+
+        function showMessage(text, color) {
+            const message = document.getElementById('message');
+            message.textContent = text;
+            message.style.color = color;
+        }
+
+        function startTimer() {
+            stopTimer();
+            startTime = Date.now();
+            timerInterval = setInterval(updateTimer, 1000);
+        }
+
+        function updateTimer() {
+            if (gameCompleted) return;
+            const elapsed = Math.floor((Date.now() - startTime) / 1000);
+            const minutes = Math.floor(elapsed / 60).toString().padStart(2, '0');
+            const seconds = (elapsed % 60).toString().padStart(2, '0');
+            document.getElementById('timer').textContent = `${minutes}:${seconds}`;
+        }
+
+        function stopTimer() {
+            if (timerInterval) {
+                clearInterval(timerInterval);
+                timerInterval = null;
+            }
+        }
+
+        function showDownloadModal() {
+            document.getElementById('downloadModal').style.display = 'block';
+        }
+
+        function closeDownloadModal() {
+            document.getElementById('downloadModal').style.display = 'none';
+        }
+
+        function confirmDownload() {
+            const selectedOption = document.querySelector('input[name="downloadOption"]:checked').value;
+            const gridSizePercent = document.getElementById('gridSizeSlider').value;
+            closeDownloadModal();
+            downloadPDF(selectedOption === 'both', gridSizePercent);
+        }
+
+        window.onclick = function(event) {
+            const modal = document.getElementById('downloadModal');
+            if (event.target === modal) {
+                closeDownloadModal();
+            }
+        }
+
+        function downloadPDF(includeSolution, sizePercent) {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF({
+                orientation: 'portrait',
+                unit: 'mm',
+                format: 'a4'
+            });
+            
+            const pageWidth = 210;
+            const pageHeight = 297;
+            const gridSize = (pageWidth * sizePercent) / 100;
+            const startX = (pageWidth - gridSize) / 2;
+            const startY = 80;
+            
+            const difficulty = document.getElementById('difficulty').value;
+            const difficultyText = translations[currentLang][difficulty];
+            const timestamp = new Date().toLocaleString(currentLang === 'zh' ? 'zh-CN' : 'en-US');
+            
+            const cells = document.querySelectorAll('.cell');
+            const originalPuzzle = Array(9).fill().map(() => Array(9).fill(0));
+            
+            cells.forEach((cell, index) => {
+                const row = Math.floor(index / 9);
+                const col = index % 9;
+                if (cell.dataset.fixed === 'true') {
+                    const value = cell.textContent ? parseInt(cell.textContent) : 0;
+                    originalPuzzle[row][col] = value;
+                }
+            });
+            
+            // Page 1: Puzzle
+            doc.setFontSize(20);
+            const title = translations[currentLang].sudokuPuzzle;
+            if (currentLang === 'zh') {
+                drawChineseText(doc, title, pageWidth / 2, 20, 20, 'center');
+            } else {
+                doc.text(title, pageWidth / 2, 20, { align: 'center' });
+            }
+            
+            doc.setFontSize(12);
+            const difficultyLine = `${translations[currentLang].difficulty} ${difficultyText}`;
+            const generatedLine = `${translations[currentLang].generated} ${timestamp}`;
+            const gridSizeLine = `${translations[currentLang].gridSize} ${sizePercent}%`;
+            
+            if (currentLang === 'zh') {
+                drawChineseText(doc, difficultyLine, 20, 35, 12, 'left');
+                drawChineseText(doc, generatedLine, 20, 42, 12, 'left');
+                drawChineseText(doc, gridSizeLine, 20, 49, 12, 'left');
+            } else {
+                doc.text(difficultyLine, 20, 35);
+                doc.text(generatedLine, 20, 42);
+                doc.text(gridSizeLine, 20, 49);
+            }
+            
+            doc.setFontSize(14);
+            const puzzleLabel = translations[currentLang].puzzle;
+            if (currentLang === 'zh') {
+                drawChineseText(doc, puzzleLabel, startX, startY - 10, 14, 'left');
+            } else {
+                doc.text(puzzleLabel, startX, startY - 10);
+            }
+            
+            drawSudokuGrid(doc, originalPuzzle, startX, startY, gridSize);
+            
+            if (includeSolution) {
+                doc.addPage();
+                doc.setFontSize(20);
+                const solutionTitle = translations[currentLang].sudokuSolution;
+                if (currentLang === 'zh') {
+                    drawChineseText(doc, solutionTitle, pageWidth / 2, 20, 20, 'center');
+                } else {
+                    doc.text(solutionTitle, pageWidth / 2, 20, { align: 'center' });
+                }
+                
+                doc.setFontSize(12);
+                if (currentLang === 'zh') {
+                    drawChineseText(doc, difficultyLine, 20, 35, 12, 'left');
+                    drawChineseText(doc, generatedLine, 20, 42, 12, 'left');
+                    drawChineseText(doc, gridSizeLine, 20, 49, 12, 'left');
+                } else {
+                    doc.text(difficultyLine, 20, 35);
+                    doc.text(generatedLine, 20, 42);
+                    doc.text(gridSizeLine, 20, 49);
+                }
+                
+                doc.setFontSize(14);
+                const solutionLabel = translations[currentLang].solution;
+                if (currentLang === 'zh') {
+                    drawChineseText(doc, solutionLabel, startX, startY - 10, 14, 'left');
+                } else {
+                    doc.text(solutionLabel, startX, startY - 10);
+                }
+                
+                drawSudokuGrid(doc, solution, startX, startY, gridSize);
+            }
+            
+            const filename = includeSolution 
+                ? `sudoku_${difficulty}_${sizePercent}pct_with_solution_${Date.now()}.pdf`
+                : `sudoku_${difficulty}_${sizePercent}pct_${Date.now()}.pdf`;
+            
+            doc.save(filename);
+            showMessage(translations[currentLang].pdfDownloaded, '#4CAF50');
+        }
+
+        function drawChineseText(doc, text, x, y, fontSize, align = 'left') {
+            // Create a temporary canvas to render Chinese text
+            const tempCanvas = document.createElement('canvas');
+            const tempCtx = tempCanvas.getContext('2d');
+            
+            // Set canvas size based on text
+            tempCtx.font = `${fontSize * 4}px Arial, sans-serif`;
+            const metrics = tempCtx.measureText(text);
+            const textWidth = metrics.width;
+            const textHeight = fontSize * 5;
+            
+            tempCanvas.width = textWidth + 20;
+            tempCanvas.height = textHeight;
+            
+            // Draw text on canvas
+            tempCtx.fillStyle = 'white';
+            tempCtx.fillRect(0, 0, tempCanvas.width, tempCanvas.height);
+            tempCtx.fillStyle = 'black';
+            tempCtx.font = `${fontSize * 4}px Arial, sans-serif`;
+            tempCtx.textBaseline = 'middle';
+            tempCtx.fillText(text, 10, textHeight / 2);
+            
+            // Convert canvas to image and add to PDF
+            const imgData = tempCanvas.toDataURL('image/png');
+            const imgWidth = textWidth / 4 * 0.264583; // Convert px to mm
+            const imgHeight = textHeight / 4 * 0.264583;
+            
+            let xPos = x;
+            if (align === 'center') {
+                xPos = x - imgWidth / 2;
+            } else if (align === 'right') {
+                xPos = x - imgWidth;
+            }
+            
+            doc.addImage(imgData, 'PNG', xPos, y - imgHeight / 2, imgWidth, imgHeight);
+        }
+
+        function drawSudokuGrid(doc, grid, x, y, gridSize) {
+            const cellSize = gridSize / 9;
+            
+            // Draw grid lines
+            for (let i = 0; i <= 9; i++) {
+                const lineWidth = i % 3 === 0 ? 0.5 : 0.1;
+                doc.setLineWidth(lineWidth);
+                doc.line(x, y + i * cellSize, x + gridSize, y + i * cellSize);
+                doc.line(x + i * cellSize, y, x + i * cellSize, y + gridSize);
+            }
+            
+            // Draw numbers
+            const fontSize = Math.max(8, gridSize / 7.5);
+            doc.setFontSize(fontSize);
+            doc.setTextColor(0, 0, 0);
+            
+            for (let i = 0; i < 9; i++) {
+                for (let j = 0; j < 9; j++) {
+                    const value = grid[i][j];
+                    if (value !== 0) {
+                        const cellX = x + j * cellSize + cellSize / 2;
+                        const cellY = y + i * cellSize + cellSize / 2 + fontSize / 3;
+                        doc.text(value.toString(), cellX, cellY, { align: 'center' });
+                    }
+                }
+            }
+        }
+
+        init();
+    </script>
+</body>
+</html>
