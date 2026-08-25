@@ -1,0 +1,407 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Puzzle Games Collection</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            width: 100%;
+        }
+
+        .lang-switch {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 100;
+        }
+
+        .lang-button {
+            background: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            color: #667eea;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s;
+        }
+
+        .lang-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 7px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 50px;
+            animation: fadeInDown 0.8s ease-out;
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .header h1 {
+            font-size: 3em;
+            color: white;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.2em;
+            color: rgba(255, 255, 255, 0.9);
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
+        }
+
+        .games-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .game-card {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+            color: inherit;
+            display: block;
+            animation: fadeInUp 0.8s ease-out;
+            animation-fill-mode: both;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .game-card:nth-child(1) { animation-delay: 0.1s; }
+        .game-card:nth-child(2) { animation-delay: 0.2s; }
+        .game-card:nth-child(3) { animation-delay: 0.3s; }
+        .game-card:nth-child(4) { animation-delay: 0.4s; }
+        .game-card:nth-child(5) { animation-delay: 0.5s; }
+        .game-card:nth-child(6) { animation-delay: 0.6s; }
+
+        .game-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+        }
+
+        .game-icon {
+            font-size: 4em;
+            text-align: center;
+            margin-bottom: 20px;
+            filter: drop-shadow(2px 2px 4px rgba(0, 0, 0, 0.1));
+        }
+
+        .game-title {
+            font-size: 1.8em;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .game-description {
+            font-size: 1em;
+            color: #666;
+            text-align: center;
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+
+        .game-features {
+            list-style: none;
+            padding: 15px 0;
+            border-top: 2px solid #f0f0f0;
+        }
+
+        .game-features li {
+            padding: 5px 0;
+            color: #555;
+            font-size: 0.9em;
+        }
+
+        .game-features li:before {
+            content: "✓ ";
+            color: #4CAF50;
+            font-weight: bold;
+            margin-right: 5px;
+        }
+
+        .play-button {
+            display: block;
+            text-align: center;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 12px 25px;
+            border-radius: 25px;
+            font-weight: bold;
+            margin-top: 15px;
+            transition: all 0.3s;
+        }
+
+        .game-card:hover .play-button {
+            background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+            transform: scale(1.05);
+        }
+
+        .coming-soon {
+            opacity: 0.6;
+            cursor: not-allowed;
+            position: relative;
+        }
+
+        .coming-soon:hover {
+            transform: none;
+        }
+
+        .coming-soon .play-button {
+            background: #999;
+        }
+
+        .coming-soon:hover .play-button {
+            background: #999;
+            transform: none;
+        }
+
+        .coming-soon-badge {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: #FF9800;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.8em;
+            font-weight: bold;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+
+        .footer {
+            text-align: center;
+            color: white;
+            margin-top: 40px;
+            padding: 20px;
+            font-size: 0.9em;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2em;
+            }
+
+            .header p {
+                font-size: 1em;
+            }
+
+            .games-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+
+            .game-card {
+                padding: 20px;
+            }
+
+            .game-icon {
+                font-size: 3em;
+            }
+
+            .game-title {
+                font-size: 1.5em;
+            }
+
+            .lang-switch {
+                top: 10px;
+                right: 10px;
+            }
+
+            .lang-button {
+                padding: 8px 15px;
+                font-size: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="lang-switch">
+        <button class="lang-button" onclick="toggleLanguage()">
+            <span id="langText">中文</span>
+        </button>
+    </div>
+
+    <div class="container">
+        <div class="header">
+            <h1 data-en="🎮 Puzzle Games Collection" data-zh="🎮 益智游戏合集">🎮 Puzzle Games Collection</h1>
+            <p data-en="Challenge your mind with our collection of classic puzzle games" data-zh="挑战你的思维，体验经典益智游戏">Challenge your mind with our collection of classic puzzle games</p>
+        </div>
+
+        <div class="games-grid">
+            <!-- Sudoku Game -->
+            <a href="sudoku.html" class="game-card">
+                <div class="game-icon">🔢</div>
+                <div class="game-title" data-en="Sudoku" data-zh="数独">Sudoku</div>
+                <div class="game-description" data-en="Classic number puzzle game with multiple difficulty levels" data-zh="经典数字拼图游戏，多种难度级别">
+                    Classic number puzzle game with multiple difficulty levels
+                </div>
+                <ul class="game-features">
+                    <li data-en="4 difficulty levels" data-zh="4个难度级别">4 difficulty levels</li>
+                    <li data-en="Hint system" data-zh="提示系统">Hint system</li>
+                    <li data-en="Error checking" data-zh="错误检查">Error checking</li>
+                    <li data-en="Download as PDF" data-zh="下载为PDF">Download as PDF</li>
+                </ul>
+                <div class="play-button" data-en="Play Now" data-zh="开始游戏">Play Now</div>
+            </a>
+
+            <!-- Maze Game -->
+            <a href="maze.html" class="game-card">
+                <div class="game-icon">🌀</div>
+                <div class="game-title" data-en="Maze" data-zh="迷宫">Maze</div>
+                <div class="game-description" data-en="Navigate through randomly generated mazes to reach the goal" data-zh="在随机生成的迷宫中找到出路">
+                    Navigate through randomly generated mazes to reach the goal
+                </div>
+                <ul class="game-features">
+                    <li data-en="Multiple grid sizes" data-zh="多种网格尺寸">Multiple grid sizes</li>
+                    <li data-en="Random generation" data-zh="随机生成">Random generation</li>
+                    <li data-en="Timer & moves counter" data-zh="计时器和步数统计">Timer & moves counter</li>
+                    <li data-en="Download as PDF" data-zh="下载为PDF">Download as PDF</li>
+                </ul>
+                <div class="play-button" data-en="Play Now" data-zh="开始游戏">Play Now</div>
+            </a>
+
+            <!-- Placeholder for future games -->
+            <div class="game-card coming-soon">
+                <div class="coming-soon-badge" data-en="Coming Soon" data-zh="即将推出">Coming Soon</div>
+                <div class="game-icon">🧩</div>
+                <div class="game-title" data-en="Jigsaw Puzzle" data-zh="拼图">Jigsaw Puzzle</div>
+                <div class="game-description" data-en="Piece together beautiful images in this classic puzzle game" data-zh="在这个经典拼图游戏中拼凑美丽的图片">
+                    Piece together beautiful images in this classic puzzle game
+                </div>
+                <ul class="game-features">
+                    <li data-en="Multiple piece counts" data-zh="多种拼图数量">Multiple piece counts</li>
+                    <li data-en="Custom images" data-zh="自定义图片">Custom images</li>
+                    <li data-en="Progress saving" data-zh="进度保存">Progress saving</li>
+                </ul>
+                <div class="play-button" data-en="Coming Soon" data-zh="即将推出">Coming Soon</div>
+            </div>
+
+            <div class="game-card coming-soon">
+                <div class="coming-soon-badge" data-en="Coming Soon" data-zh="即将推出">Coming Soon</div>
+                <div class="game-icon">🎯</div>
+                <div class="game-title" data-en="Minesweeper" data-zh="扫雷">Minesweeper</div>
+                <div class="game-description" data-en="Classic logic game - clear the board without hitting mines" data-zh="经典逻辑游戏 - 清除所有方块而不触雷">
+                    Classic logic game - clear the board without hitting mines
+                </div>
+                <ul class="game-features">
+                    <li data-en="Classic gameplay" data-zh="经典玩法">Classic gameplay</li>
+                    <li data-en="Multiple difficulties" data-zh="多种难度">Multiple difficulties</li>
+                    <li data-en="Best time records" data-zh="最佳时间记录">Best time records</li>
+                </ul>
+                <div class="play-button" data-en="Coming Soon" data-zh="即将推出">Coming Soon</div>
+            </div>
+
+            <div class="game-card coming-soon">
+                <div class="coming-soon-badge" data-en="Coming Soon" data-zh="即将推出">Coming Soon</div>
+                <div class="game-icon">🎲</div>
+                <div class="game-title" data-en="2048" data-zh="2048">2048</div>
+                <div class="game-description" data-en="Slide and merge tiles to reach the 2048 tile" data-zh="滑动并合并方块以达到2048">
+                    Slide and merge tiles to reach the 2048 tile
+                </div>
+                <ul class="game-features">
+                    <li data-en="Addictive gameplay" data-zh="令人上瘾的玩法">Addictive gameplay</li>
+                    <li data-en="Score tracking" data-zh="分数追踪">Score tracking</li>
+                    <li data-en="Undo feature" data-zh="撤销功能">Undo feature</li>
+                </ul>
+                <div class="play-button" data-en="Coming Soon" data-zh="即将推出">Coming Soon</div>
+            </div>
+
+            <div class="game-card coming-soon">
+                <div class="coming-soon-badge" data-en="Coming Soon" data-zh="即将推出">Coming Soon</div>
+                <div class="game-icon">🧮</div>
+                <div class="game-title" data-en="Crossword" data-zh="填字游戏">Crossword</div>
+                <div class="game-description" data-en="Solve word puzzles with intersecting clues" data-zh="通过交叉线索解决文字谜题">
+                    Solve word puzzles with intersecting clues
+                </div>
+                <ul class="game-features">
+                    <li data-en="Daily puzzles" data-zh="每日谜题">Daily puzzles</li>
+                    <li data-en="Multiple categories" data-zh="多种类别">Multiple categories</li>
+                    <li data-en="Hint system" data-zh="提示系统">Hint system</li>
+                </ul>
+                <div class="play-button" data-en="Coming Soon" data-zh="即将推出">Coming Soon</div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p data-en="© 2024 Puzzle Games Collection | More games coming soon!" data-zh="© 2024 益智游戏合集 | 更多游戏即将推出！">© 2024 Puzzle Games Collection | More games coming soon!</p>
+        </div>
+    </div>
+
+    <script>
+        let currentLang = 'en';
+
+        // Load saved language preference
+        window.addEventListener('DOMContentLoaded', () => {
+            const savedLang = localStorage.getItem('preferredLanguage') || 'en';
+            if (savedLang === 'zh') {
+                currentLang = 'en'; // Set to opposite so toggle switches to zh
+                toggleLanguage();
+            }
+        });
+
+        function toggleLanguage() {
+            currentLang = currentLang === 'en' ? 'zh' : 'en';
+            
+            // Save preference
+            localStorage.setItem('preferredLanguage', currentLang);
+            
+            // Update language button
+            document.getElementById('langText').textContent = currentLang === 'en' ? '中文' : 'English';
+            
+            // Update all elements with language attributes
+            document.querySelectorAll('[data-en][data-zh]').forEach(element => {
+                element.textContent = element.getAttribute(`data-${currentLang}`);
+            });
+        }
+    </script>
+</body>
+</html>

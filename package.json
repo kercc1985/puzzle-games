@@ -1,0 +1,8 @@
+﻿{
+  "name": "puzzle-games",
+  "version": "1.0.0",
+  "description": "Puzzle games with leaderboard",
+  "dependencies": {
+    "@vercel/postgres": "^0.5.1"
+  }
+}

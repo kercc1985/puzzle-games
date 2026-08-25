@@ -1,0 +1,1392 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Maze Game</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 900px;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        h1 {
+            color: #667eea;
+            font-size: 2em;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .header-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .back-button, .lang-button {
+            padding: 8px 15px;
+            background: #999;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            text-decoration: none;
+            transition: all 0.3s;
+        }
+
+        .back-button:hover, .lang-button:hover {
+            background: #777;
+            transform: translateY(-2px);
+        }
+
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
+            justify-content: center;
+        }
+
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            background: #667eea;
+            color: white;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+            font-weight: bold;
+        }
+
+        button:hover {
+            background: #764ba2;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        button.download-btn {
+            background: #4CAF50;
+        }
+
+        button.download-btn:hover {
+            background: #45a049;
+        }
+
+        button.solve-btn {
+            background: #FF9800;
+        }
+
+        button.solve-btn:hover {
+            background: #F57C00;
+        }
+
+        select {
+            padding: 10px;
+            border-radius: 8px;
+            border: 2px solid #667eea;
+            font-size: 14px;
+            cursor: pointer;
+            background: white;
+            font-weight: bold;
+        }
+
+        .info {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 15px;
+            font-size: 16px;
+            color: #555;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .info-item {
+            font-weight: bold;
+        }
+
+        .info-value {
+            color: #667eea;
+        }
+
+        .maze-container {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 15px;
+            overflow: auto;
+            padding: 20px;
+        }
+
+        #mazeCanvas {
+            border: 2px solid #333;
+            border-radius: 10px;
+            cursor: crosshair;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            background: white;
+        }
+
+        .message {
+            text-align: center;
+            margin-top: 15px;
+            font-size: 18px;
+            font-weight: bold;
+            color: #4CAF50;
+            min-height: 25px;
+        }
+
+        .instructions {
+            background: #f5f5f5;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 15px;
+            font-size: 14px;
+            color: #555;
+            line-height: 1.6;
+        }
+
+        .instructions strong {
+            color: #667eea;
+        }
+
+        /* Modal styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            animation: fadeIn 0.3s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .modal-content {
+            background-color: white;
+            margin: 5% auto;
+            padding: 30px;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            animation: slideIn 0.3s;
+            max-height: 85vh;
+            overflow-y: auto;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateY(-50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .modal-header {
+            font-size: 1.5em;
+            color: #667eea;
+            margin-bottom: 20px;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        .modal-section {
+            margin-bottom: 25px;
+        }
+
+        .modal-section-title {
+            font-size: 1.1em;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 12px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #667eea;
+        }
+
+        .modal-options {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .modal-option {
+            display: flex;
+            align-items: center;
+            padding: 12px 15px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .modal-option:hover {
+            border-color: #667eea;
+            background-color: #f5f5ff;
+        }
+
+        .modal-option input[type="radio"] {
+            margin-right: 12px;
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+
+        .option-label {
+            flex: 1;
+        }
+
+        .option-title {
+            font-weight: bold;
+            font-size: 1em;
+            margin-bottom: 3px;
+        }
+
+        .option-description {
+            font-size: 0.85em;
+            color: #666;
+        }
+
+        .size-slider-container {
+            padding: 15px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            background-color: #f9f9f9;
+        }
+
+        .slider-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .slider-value {
+            color: #667eea;
+            font-size: 1.1em;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            height: 6px;
+            border-radius: 3px;
+            background: linear-gradient(to right, #667eea, #764ba2);
+            outline: none;
+            opacity: 0.8;
+            transition: opacity 0.2s;
+        }
+
+        input[type="range"]:hover {
+            opacity: 1;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #667eea;
+            cursor: pointer;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+        }
+
+        input[type="range"]::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #667eea;
+            cursor: pointer;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+            border: none;
+        }
+
+        .size-presets {
+            display: flex;
+            gap: 8px;
+            margin-top: 10px;
+            flex-wrap: wrap;
+        }
+
+        .preset-btn {
+            padding: 5px 12px;
+            font-size: 0.85em;
+            background: #e0e0e0;
+            color: #333;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .preset-btn:hover {
+            background: #667eea;
+            color: white;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .modal-buttons button {
+            flex: 1;
+        }
+
+        .cancel-btn {
+            background: #999 !important;
+        }
+
+        .cancel-btn:hover {
+            background: #777 !important;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+            }
+
+            h1 {
+                font-size: 1.5em;
+            }
+
+            button, .back-button, .lang-button {
+                padding: 8px 15px;
+                font-size: 12px;
+            }
+
+            .maze-container {
+                padding: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1><span>🌀</span> <span data-en="Maze Game" data-zh="迷宫游戏">Maze Game</span></h1>
+            <div class="header-buttons">
+                <button class="lang-button" onclick="toggleLanguage()">
+                    <span id="langText">中文</span>
+                </button>
+                <a href="index.html" class="back-button" data-en="← Back" data-zh="← 返回">← Back</a>
+            </div>
+        </div>
+        
+        <div class="controls">
+            <select id="mazeShape" onchange="onShapeChange()">
+                <option value="square" data-en="Square" data-zh="正方形">Square</option>
+                <option value="circle" data-en="Circle" data-zh="圆形">Circle</option>
+            </select>
+            <select id="mazeSize">
+                <option value="15" data-en="Small (15×15)" data-zh="小 (15×15)">Small (15×15)</option>
+                <option value="20" selected data-en="Medium (20×20)" data-zh="中 (20×20)">Medium (20×20)</option>
+                <option value="25" data-en="Large (25×25)" data-zh="大 (25×25)">Large (25×25)</option>
+                <option value="30" data-en="Extra Large (30×30)" data-zh="超大 (30×30)">Extra Large (30×30)</option>
+                <option value="50" data-en="Massive (50×50)" data-zh="巨大 (50×50)">Massive (50×50)</option>
+            </select>
+            <button onclick="newMaze()" data-en="New Maze" data-zh="新迷宫">New Maze</button>
+            <button class="solve-btn" onclick="toggleSolution()" data-en="Show Solution" data-zh="显示答案">Show Solution</button>
+            <button onclick="resetPosition()" data-en="Reset" data-zh="重置">Reset</button>
+            <button class="download-btn" onclick="showDownloadModal()">
+                <span data-en="📄 Download PDF" data-zh="📄 下载PDF">📄 Download PDF</span>
+            </button>
+        </div>
+
+        <div class="info">
+            <div class="info-item"><span data-en="Size:" data-zh="大小：">Size:</span> <span class="info-value" id="current-size">20×20</span></div>
+            <div class="info-item"><span data-en="Shape:" data-zh="形状：">Shape:</span> <span class="info-value" id="current-shape" data-en="Square" data-zh="正方形">Square</span></div>
+            <div class="info-item"><span data-en="Timer:" data-zh="计时：">Timer:</span> <span class="info-value" id="timer">00:00</span></div>
+            <div class="info-item"><span data-en="Moves:" data-zh="步数：">Moves:</span> <span class="info-value" id="moves">0</span></div>
+        </div>
+
+        <div class="maze-container">
+            <canvas id="mazeCanvas" width="600" height="600"></canvas>
+        </div>
+        
+        <div class="message" id="message"></div>
+
+        <div class="instructions">
+            <strong data-en="How to Play:" data-zh="游戏说明：">How to Play:</strong> 
+            <span data-en="Use arrow keys (↑ ↓ ← →) or WASD to move, or click on adjacent cells. Blue line shows your path. Click 'Show Solution' to see the optimal path in red." 
+                  data-zh="使用方向键（↑ ↓ ← →）或 WASD 移动，或点击相邻的格子。蓝线显示你的路径。点击"显示答案"查看红色的最优路径。">
+                Use arrow keys (↑ ↓ ← →) or WASD to move, or click on adjacent cells. Blue line shows your path. Click 'Show Solution' to see the optimal path in red.
+            </span>
+        </div>
+    </div>
+
+    <!-- Download Modal -->
+    <div id="downloadModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header" data-en="Download Options" data-zh="下载选项">Download Options</div>
+            
+            <div class="modal-section">
+                <div class="modal-section-title" data-en="Maze Size on Paper" data-zh="纸上迷宫大小">Maze Size on Paper</div>
+                <div class="size-slider-container">
+                    <div class="slider-label">
+                        <span data-en="Adjust maze size:" data-zh="调整迷宫大小：">Adjust maze size:</span>
+                        <span class="slider-value" id="sizeValue">60%</span>
+                    </div>
+                    <input type="range" id="mazeSizeSlider" min="30" max="90" value="60" step="5">
+                    <div class="size-presets">
+                        <button class="preset-btn" onclick="setMazeSize(40)">
+                            <span data-en="Small (40%)" data-zh="小 (40%)">Small (40%)</span>
+                        </button>
+                        <button class="preset-btn" onclick="setMazeSize(60)">
+                            <span data-en="Medium (60%)" data-zh="中 (60%)">Medium (60%)</span>
+                        </button>
+                        <button class="preset-btn" onclick="setMazeSize(80)">
+                            <span data-en="Large (80%)" data-zh="大 (80%)">Large (80%)</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-section">
+                <div class="modal-section-title" data-en="Content" data-zh="内容">Content</div>
+                <div class="modal-options">
+                    <label class="modal-option">
+                        <input type="radio" name="downloadOption" value="puzzle" checked>
+                        <div class="option-label">
+                            <div class="option-title" data-en="Maze Only" data-zh="仅迷宫">Maze Only</div>
+                            <div class="option-description" data-en="Download only the maze without the solution" data-zh="仅下载迷宫，不包含答案">Download only the maze without the solution</div>
+                        </div>
+                    </label>
+                    <label class="modal-option">
+                        <input type="radio" name="downloadOption" value="both">
+                        <div class="option-label">
+                            <div class="option-title" data-en="Maze + Solution" data-zh="迷宫 + 答案">Maze + Solution</div>
+                            <div class="option-description" data-en="Download maze with solution on separate page" data-zh="下载迷宫及答案（答案在单独页面）">Download maze with solution on separate page</div>
+                        </div>
+                    </label>
+                </div>
+            </div>
+
+            <div class="modal-buttons">
+                <button class="cancel-btn" onclick="closeDownloadModal()" data-en="Cancel" data-zh="取消">Cancel</button>
+                <button class="download-btn" onclick="confirmDownload()" data-en="Download" data-zh="下载">Download</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+    <script>
+        let canvas, ctx;
+        let maze = [];
+        let playerPos = { row: 1, col: 1 };
+        let startPos = { row: 1, col: 1 };
+        let endPos = { row: 0, col: 0 };
+        let mazeSize = 20;
+        let mazeShape = 'square';
+        let cellSize = 20;
+        let moves = 0;
+        let timerInterval = null;
+        let startTime = null;
+        let gameCompleted = false;
+        let solutionPath = [];
+        let playerPath = [];
+        let showingSolution = false;
+        let currentLang = 'en';
+
+        const translations = {
+            en: {
+                square: 'Square',
+                circle: 'Circle',
+                congratulations: '🎉 Congratulations! Completed in',
+                moves: 'moves and',
+                solutionShown: 'Solution shown in red! Optimal path:',
+                solutionHidden: 'Solution hidden',
+                movesText: 'moves',
+                pdfDownloaded: 'PDF downloaded!',
+                mazePuzzle: 'Maze Puzzle',
+                mazeSolution: 'Maze Solution',
+                size: 'Size:',
+                shape: 'Shape:',
+                generated: 'Generated:',
+                mazeSize: 'Maze Size:',
+                optimalSolution: 'Optimal Solution:',
+                findYourWay: 'Find your way from S to E',
+                solutionPath: 'Solution Path (Red)',
+                showSolution: 'Show Solution',
+                hideSolution: 'Hide Solution',
+                generating: 'Generating maze, please wait...'
+            },
+            zh: {
+                square: '正方形',
+                circle: '圆形',
+                congratulations: '🎉 恭喜！用',
+                moves: '步和',
+                solutionShown: '答案以红色显示！最优路径：',
+                solutionHidden: '答案已隐藏',
+                movesText: '步',
+                pdfDownloaded: 'PDF已下载！',
+                mazePuzzle: '迷宫题目',
+                mazeSolution: '迷宫答案',
+                size: '大小：',
+                shape: '形状：',
+                generated: '生成时间：',
+                mazeSize: '迷宫大小：',
+                optimalSolution: '最优解：',
+                findYourWay: '从 S 找到通往 E 的路',
+                solutionPath: '解决路径（红色）',
+                showSolution: '显示答案',
+                hideSolution: '隐藏答案',
+                generating: '正在生成迷宫，请稍候...'
+            }
+        };
+
+        window.addEventListener('DOMContentLoaded', () => {
+            canvas = document.getElementById('mazeCanvas');
+            ctx = canvas.getContext('2d');
+            
+            const savedLang = localStorage.getItem('preferredLanguage') || 'en';
+            if (savedLang === 'zh') {
+                currentLang = 'en';
+                toggleLanguage();
+            }
+            
+            canvas.addEventListener('click', handleCanvasClick);
+            document.addEventListener('keydown', handleKeyPress);
+            
+            init();
+        });
+
+        function toggleLanguage() {
+            currentLang = currentLang === 'en' ? 'zh' : 'en';
+            localStorage.setItem('preferredLanguage', currentLang);
+            
+            document.getElementById('langText').textContent = currentLang === 'en' ? '中文' : 'English';
+            
+            document.querySelectorAll('[data-en][data-zh]').forEach(element => {
+                const text = element.getAttribute(`data-${currentLang}`);
+                if (element.tagName === 'OPTION') {
+                    element.textContent = text;
+                } else if (element.tagName === 'BUTTON' || element.tagName === 'A' || element.tagName === 'SPAN') {
+                    if (element.querySelector('span[data-en]')) {
+                    } else {
+                        element.textContent = text;
+                    }
+                } else {
+                    element.textContent = text;
+                }
+            });
+
+            updateShapeDisplay();
+            updateSolutionButtonText();
+        }
+
+        function updateShapeDisplay() {
+            const shapeElement = document.getElementById('current-shape');
+            const shape = document.getElementById('mazeShape').value;
+            shapeElement.textContent = translations[currentLang][shape];
+        }
+
+        function updateSolutionButtonText() {
+            const btn = document.querySelector('.solve-btn');
+            const btnSpan = btn.querySelector('span[data-en]');
+            if (btnSpan) {
+                btnSpan.textContent = showingSolution ? 
+                    translations[currentLang].hideSolution : 
+                    translations[currentLang].showSolution;
+            } else {
+                btn.textContent = showingSolution ? 
+                    translations[currentLang].hideSolution : 
+                    translations[currentLang].showSolution;
+            }
+        }
+
+        function onShapeChange() {
+            newMaze();
+        }
+
+        function init() {
+            initSlider();
+            newMaze();
+        }
+
+        function initSlider() {
+            const slider = document.getElementById('mazeSizeSlider');
+            const sizeValue = document.getElementById('sizeValue');
+            
+            slider.addEventListener('input', function() {
+                sizeValue.textContent = this.value + '%';
+            });
+        }
+
+        function setMazeSize(value) {
+            const slider = document.getElementById('mazeSizeSlider');
+            const sizeValue = document.getElementById('sizeValue');
+            slider.value = value;
+            sizeValue.textContent = value + '%';
+        }
+
+        function newMaze() {
+            gameCompleted = false;
+            showingSolution = false;
+            moves = 0;
+            playerPath = [];
+            document.getElementById('moves').textContent = '0';
+            
+            mazeSize = parseInt(document.getElementById('mazeSize').value);
+            mazeShape = document.getElementById('mazeShape').value;
+            
+            if (mazeSize >= 50) {
+                showMessage(translations[currentLang].generating, '#FF9800');
+            } else {
+                document.getElementById('message').textContent = '';
+            }
+            
+            document.getElementById('current-size').textContent = `${mazeSize}×${mazeSize}`;
+            updateShapeDisplay();
+            updateSolutionButtonText();
+            
+            setTimeout(() => {
+                generateMaze();
+                findSolution();
+                
+                const maxCanvasSize = Math.min(600, window.innerWidth - 100);
+                canvas.width = maxCanvasSize;
+                canvas.height = maxCanvasSize;
+                cellSize = maxCanvasSize / (mazeSize + 2);
+                
+                playerPos = { ...startPos };
+                playerPath = [{ ...startPos }];
+                
+                drawMaze();
+                startTimer();
+                
+                document.getElementById('message').textContent = '';
+            }, 50);
+        }
+
+        function generateMaze() {
+            maze = Array(mazeSize).fill().map(() => 
+                Array(mazeSize).fill().map(() => ({
+                    walls: { top: true, right: true, bottom: true, left: true },
+                    visited: false,
+                    valid: false
+                }))
+            );
+            
+            for (let row = 0; row < mazeSize; row++) {
+                for (let col = 0; col < mazeSize; col++) {
+                    maze[row][col].valid = isValidCell(row, col);
+                }
+            }
+            
+            if (mazeShape === 'circle') {
+                startPos = findValidStartPosition();
+                endPos = findValidEndPosition();
+            } else {
+                startPos = { row: 1, col: 1 };
+                endPos = { row: mazeSize - 2, col: mazeSize - 2 };
+            }
+            
+            const stack = [startPos];
+            maze[startPos.row][startPos.col].visited = true;
+            
+            const directions = [
+                { dr: -1, dc: 0, wall: 'top', opposite: 'bottom' },
+                { dr: 1, dc: 0, wall: 'bottom', opposite: 'top' },
+                { dr: 0, dc: -1, wall: 'left', opposite: 'right' },
+                { dr: 0, dc: 1, wall: 'right', opposite: 'left' }
+            ];
+            
+            while (stack.length > 0) {
+                const current = stack[stack.length - 1];
+                const neighbors = [];
+                
+                for (const dir of directions) {
+                    const newRow = current.row + dir.dr;
+                    const newCol = current.col + dir.dc;
+                    
+                    if (newRow >= 0 && newRow < mazeSize && 
+                        newCol >= 0 && newCol < mazeSize &&
+                        maze[newRow][newCol].valid && 
+                        !maze[newRow][newCol].visited) {
+                        neighbors.push({ row: newRow, col: newCol, dir });
+                    }
+                }
+                
+                if (neighbors.length > 0) {
+                    const next = neighbors[Math.floor(Math.random() * neighbors.length)];
+                    
+                    maze[current.row][current.col].walls[next.dir.wall] = false;
+                    maze[next.row][next.col].walls[next.dir.opposite] = false;
+                    maze[next.row][next.col].visited = true;
+                    
+                    stack.push({ row: next.row, col: next.col });
+                } else {
+                    stack.pop();
+                }
+            }
+        }
+
+        function isValidCell(row, col) {
+            if (mazeShape === 'square') {
+                return true;
+            } else if (mazeShape === 'circle') {
+                const center = (mazeSize - 1) / 2;
+                const radius = mazeSize / 2 - 1;
+                const dist = Math.sqrt(Math.pow(row - center, 2) + Math.pow(col - center, 2));
+                return dist <= radius;
+            }
+            return true;
+        }
+
+        function findValidStartPosition() {
+            for (let row = 1; row < mazeSize / 3; row++) {
+                for (let col = Math.floor(mazeSize / 3); col < Math.floor(mazeSize * 2 / 3); col++) {
+                    if (isValidCell(row, col)) {
+                        return { row, col };
+                    }
+                }
+            }
+            return { row: 1, col: Math.floor(mazeSize / 2) };
+        }
+
+        function findValidEndPosition() {
+            for (let row = mazeSize - 2; row > mazeSize * 2 / 3; row--) {
+                for (let col = Math.floor(mazeSize / 3); col < Math.floor(mazeSize * 2 / 3); col++) {
+                    if (isValidCell(row, col)) {
+                        return { row, col };
+                    }
+                }
+            }
+            return { row: mazeSize - 2, col: Math.floor(mazeSize / 2) };
+        }
+
+        function findSolution() {
+            const queue = [{ ...startPos, path: [{ ...startPos }] }];
+            const visited = new Set();
+            visited.add(`${startPos.row},${startPos.col}`);
+            
+            const directions = [
+                { dr: -1, dc: 0, wall: 'top' },
+                { dr: 1, dc: 0, wall: 'bottom' },
+                { dr: 0, dc: -1, wall: 'left' },
+                { dr: 0, dc: 1, wall: 'right' }
+            ];
+            
+            while (queue.length > 0) {
+                const current = queue.shift();
+                
+                if (current.row === endPos.row && current.col === endPos.col) {
+                    solutionPath = current.path;
+                    return;
+                }
+                
+                for (const dir of directions) {
+                    if (!maze[current.row][current.col].walls[dir.wall]) {
+                        const newRow = current.row + dir.dr;
+                        const newCol = current.col + dir.dc;
+                        const key = `${newRow},${newCol}`;
+                        
+                        if (newRow >= 0 && newRow < mazeSize && 
+                            newCol >= 0 && newCol < mazeSize &&
+                            maze[newRow][newCol].valid && 
+                            !visited.has(key)) {
+                            visited.add(key);
+                            queue.push({
+                                row: newRow,
+                                col: newCol,
+                                path: [...current.path, { row: newRow, col: newCol }]
+                            });
+                        }
+                    }
+                }
+            }
+        }
+
+        function drawMaze() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            const offsetX = cellSize;
+            const offsetY = cellSize;
+            
+            ctx.strokeStyle = '#333';
+            ctx.lineWidth = 3;
+            drawOuterShape(offsetX, offsetY);
+            
+            ctx.strokeStyle = '#333';
+            ctx.lineWidth = mazeSize >= 50 ? 1 : 2;
+            
+            for (let row = 0; row < mazeSize; row++) {
+                for (let col = 0; col < mazeSize; col++) {
+                    if (!maze[row][col].valid) continue;
+                    
+                    const x = offsetX + col * cellSize;
+                    const y = offsetY + row * cellSize;
+                    const cell = maze[row][col];
+                    
+                    ctx.beginPath();
+                    
+                    if (cell.walls.top) {
+                        if (row === 0 || !maze[row - 1][col].valid) {
+                            ctx.moveTo(x, y);
+                            ctx.lineTo(x + cellSize, y);
+                        } else {
+                            ctx.moveTo(x, y);
+                            ctx.lineTo(x + cellSize, y);
+                        }
+                    }
+                    if (cell.walls.right) {
+                        if (col === mazeSize - 1 || !maze[row][col + 1].valid) {
+                            ctx.moveTo(x + cellSize, y);
+                            ctx.lineTo(x + cellSize, y + cellSize);
+                        } else {
+                            ctx.moveTo(x + cellSize, y);
+                            ctx.lineTo(x + cellSize, y + cellSize);
+                        }
+                    }
+                    if (cell.walls.bottom) {
+                        if (row === mazeSize - 1 || !maze[row + 1][col].valid) {
+                            ctx.moveTo(x, y + cellSize);
+                            ctx.lineTo(x + cellSize, y + cellSize);
+                        } else {
+                            ctx.moveTo(x, y + cellSize);
+                            ctx.lineTo(x + cellSize, y + cellSize);
+                        }
+                    }
+                    if (cell.walls.left) {
+                        if (col === 0 || !maze[row][col - 1].valid) {
+                            ctx.moveTo(x, y);
+                            ctx.lineTo(x, y + cellSize);
+                        } else {
+                            ctx.moveTo(x, y);
+                            ctx.lineTo(x, y + cellSize);
+                        }
+                    }
+                    ctx.stroke();
+                }
+            }
+            
+            const pathWidth = mazeSize >= 50 ? 2 : 3;
+            
+            if (showingSolution && solutionPath.length > 0) {
+                drawPath(solutionPath, '#ff0000', pathWidth);
+            }
+            
+            if (playerPath.length > 1) {
+                drawPath(playerPath, '#2196F3', pathWidth);
+            }
+            
+            drawMarker(startPos, 'S', '#4CAF50');
+            drawMarker(endPos, 'E', '#f44336');
+            
+            const px = offsetX + playerPos.col * cellSize + cellSize / 2;
+            const py = offsetY + playerPos.row * cellSize + cellSize / 2;
+            ctx.fillStyle = '#2196F3';
+            ctx.beginPath();
+            const playerRadius = mazeSize >= 50 ? cellSize / 5 : cellSize / 4;
+            ctx.arc(px, py, playerRadius, 0, Math.PI * 2);
+            ctx.fill();
+        }
+
+        function drawOuterShape(offsetX, offsetY) {
+            ctx.beginPath();
+            
+            if (mazeShape === 'square') {
+                ctx.rect(offsetX, offsetY, mazeSize * cellSize, mazeSize * cellSize);
+            } else if (mazeShape === 'circle') {
+                const centerX = offsetX + (mazeSize * cellSize) / 2;
+                const centerY = offsetY + (mazeSize * cellSize) / 2;
+                const radius = (mazeSize * cellSize) / 2;
+                ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+            }
+            
+            ctx.stroke();
+        }
+
+        function drawPath(path, color, lineWidth) {
+            if (path.length < 2) return;
+            
+            const offsetX = cellSize;
+            const offsetY = cellSize;
+            
+            ctx.strokeStyle = color;
+            ctx.lineWidth = lineWidth;
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+            
+            ctx.beginPath();
+            const firstPos = path[0];
+            ctx.moveTo(
+                offsetX + firstPos.col * cellSize + cellSize / 2,
+                offsetY + firstPos.row * cellSize + cellSize / 2
+            );
+            
+            for (let i = 1; i < path.length; i++) {
+                const pos = path[i];
+                ctx.lineTo(
+                    offsetX + pos.col * cellSize + cellSize / 2,
+                    offsetY + pos.row * cellSize + cellSize / 2
+                );
+            }
+            
+            ctx.stroke();
+        }
+
+        function drawMarker(pos, text, color) {
+            const offsetX = cellSize;
+            const offsetY = cellSize;
+            const x = offsetX + pos.col * cellSize + cellSize / 2;
+            const y = offsetY + pos.row * cellSize + cellSize / 2;
+            
+            const markerRadius = mazeSize >= 50 ? cellSize / 4 : cellSize / 3;
+            const fontSize = mazeSize >= 50 ? cellSize * 0.5 : cellSize * 0.6;
+            
+            ctx.fillStyle = color;
+            ctx.beginPath();
+            ctx.arc(x, y, markerRadius, 0, Math.PI * 2);
+            ctx.fill();
+            
+            ctx.fillStyle = 'white';
+            ctx.font = `bold ${fontSize}px Arial`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(text, x, y);
+        }
+
+        function handleCanvasClick(e) {
+            if (gameCompleted) return;
+            
+            const rect = canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            
+            const offsetX = cellSize;
+            const offsetY = cellSize;
+            
+            const col = Math.floor((x - offsetX) / cellSize);
+            const row = Math.floor((y - offsetY) / cellSize);
+            
+            if (row < 0 || row >= mazeSize || col < 0 || col >= mazeSize) return;
+            if (!maze[row][col].valid) return;
+            
+            const rowDiff = Math.abs(row - playerPos.row);
+            const colDiff = Math.abs(col - playerPos.col);
+            
+            if ((rowDiff === 1 && colDiff === 0) || (rowDiff === 0 && colDiff === 1)) {
+                let canMove = false;
+                if (row < playerPos.row && !maze[playerPos.row][playerPos.col].walls.top) canMove = true;
+                if (row > playerPos.row && !maze[playerPos.row][playerPos.col].walls.bottom) canMove = true;
+                if (col < playerPos.col && !maze[playerPos.row][playerPos.col].walls.left) canMove = true;
+                if (col > playerPos.col && !maze[playerPos.row][playerPos.col].walls.right) canMove = true;
+                
+                if (canMove) {
+                    movePlayer(row, col);
+                }
+            }
+        }
+
+        function handleKeyPress(e) {
+            if (gameCompleted) return;
+            
+            let newRow = playerPos.row;
+            let newCol = playerPos.col;
+            let wall = null;
+            
+            switch(e.key) {
+                case 'ArrowUp':
+                case 'w':
+                case 'W':
+                    newRow--;
+                    wall = 'top';
+                    e.preventDefault();
+                    break;
+                case 'ArrowDown':
+                case 's':
+                case 'S':
+                    newRow++;
+                    wall = 'bottom';
+                    e.preventDefault();
+                    break;
+                case 'ArrowLeft':
+                case 'a':
+                case 'A':
+                    newCol--;
+                    wall = 'left';
+                    e.preventDefault();
+                    break;
+                case 'ArrowRight':
+                case 'd':
+                case 'D':
+                    newCol++;
+                    wall = 'right';
+                    e.preventDefault();
+                    break;
+                default:
+                    return;
+            }
+            
+            if (newRow >= 0 && newRow < mazeSize && 
+                newCol >= 0 && newCol < mazeSize &&
+                maze[newRow][newCol].valid && 
+                !maze[playerPos.row][playerPos.col].walls[wall]) {
+                movePlayer(newRow, newCol);
+            }
+        }
+
+        function movePlayer(newRow, newCol) {
+            playerPos.row = newRow;
+            playerPos.col = newCol;
+            playerPath.push({ ...playerPos });
+            moves++;
+            document.getElementById('moves').textContent = moves;
+            
+            drawMaze();
+            checkWin();
+        }
+
+        function checkWin() {
+            if (playerPos.row === endPos.row && playerPos.col === endPos.col) {
+                gameCompleted = true;
+                stopTimer();
+                const time = document.getElementById('timer').textContent;
+                showMessage(`${translations[currentLang].congratulations} ${moves} ${translations[currentLang].moves} ${time}!`, '#4CAF50');
+            }
+        }
+
+        function toggleSolution() {
+            showingSolution = !showingSolution;
+            updateSolutionButtonText();
+            
+            if (showingSolution) {
+                showMessage(`${translations[currentLang].solutionShown} ${solutionPath.length - 1} ${translations[currentLang].movesText}`, '#FF9800');
+            } else {
+                showMessage(translations[currentLang].solutionHidden, '#2196F3');
+            }
+            
+            drawMaze();
+        }
+
+        function resetPosition() {
+            if (gameCompleted) return;
+            
+            playerPos = { ...startPos };
+            playerPath = [{ ...startPos }];
+            moves = 0;
+            showingSolution = false;
+            document.getElementById('moves').textContent = '0';
+            document.getElementById('message').textContent = '';
+            updateSolutionButtonText();
+            
+            drawMaze();
+            startTimer();
+        }
+
+        function showMessage(text, color) {
+            const message = document.getElementById('message');
+            message.textContent = text;
+            message.style.color = color;
+        }
+
+        function startTimer() {
+            stopTimer();
+            startTime = Date.now();
+            timerInterval = setInterval(updateTimer, 1000);
+        }
+
+        function updateTimer() {
+            if (gameCompleted) return;
+            const elapsed = Math.floor((Date.now() - startTime) / 1000);
+            const minutes = Math.floor(elapsed / 60).toString().padStart(2, '0');
+            const seconds = (elapsed % 60).toString().padStart(2, '0');
+            document.getElementById('timer').textContent = `${minutes}:${seconds}`;
+        }
+
+        function stopTimer() {
+            if (timerInterval) {
+                clearInterval(timerInterval);
+                timerInterval = null;
+            }
+        }
+
+        function showDownloadModal() {
+            document.getElementById('downloadModal').style.display = 'block';
+        }
+
+        function closeDownloadModal() {
+            document.getElementById('downloadModal').style.display = 'none';
+        }
+
+        function confirmDownload() {
+            const selectedOption = document.querySelector('input[name="downloadOption"]:checked').value;
+            const mazeSizePercent = document.getElementById('mazeSizeSlider').value;
+            closeDownloadModal();
+            downloadPDF(selectedOption === 'both', mazeSizePercent);
+        }
+
+        window.onclick = function(event) {
+            const modal = document.getElementById('downloadModal');
+            if (event.target === modal) {
+                closeDownloadModal();
+            }
+        }
+
+        function downloadPDF(includeSolution, sizePercent) {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF({
+                orientation: 'portrait',
+                unit: 'mm',
+                format: 'a4'
+            });
+            
+            const pageWidth = 210;
+            const pageHeight = 297;
+            const pdfSize = (pageWidth * sizePercent) / 100;
+            const startX = (pageWidth - pdfSize) / 2;
+            const startY = 90;
+            
+            const timestamp = new Date().toLocaleString(currentLang === 'zh' ? 'zh-CN' : 'en-US');
+            const shapeText = translations[currentLang][mazeShape];
+            
+            // Set font based on language
+            if (currentLang === 'zh') {
+                // For Chinese, we'll use a workaround by drawing text as images from canvas
+                // Or use simpler approach with numbers and English letters only
+                doc.setFont('helvetica');
+            } else {
+                doc.setFont('helvetica');
+            }
+            
+            doc.setFontSize(20);
+            const title = translations[currentLang].mazePuzzle;
+            if (currentLang === 'zh') {
+                // Use canvas to render Chinese text
+                drawChineseText(doc, title, pageWidth / 2, 20, 20, 'center');
+            } else {
+                doc.text(title, pageWidth / 2, 20, { align: 'center' });
+            }
+            
+            doc.setFontSize(12);
+            const infoTexts = [
+                `${translations[currentLang].size} ${mazeSize}x${mazeSize}`,
+                `${translations[currentLang].shape} ${shapeText}`,
+                `${translations[currentLang].generated} ${timestamp}`,
+                `${translations[currentLang].mazeSize} ${sizePercent}%`,
+                `${translations[currentLang].optimalSolution} ${solutionPath.length - 1} ${translations[currentLang].movesText}`
+            ];
+            
+            let yPos = 35;
+            infoTexts.forEach((text, index) => {
+                if (currentLang === 'zh') {
+                    drawChineseText(doc, text, 20, yPos, 12, 'left');
+                } else {
+                    doc.text(text, 20, yPos);
+                }
+                yPos += 7;
+            });
+            
+            doc.setFontSize(14);
+            const instruction = translations[currentLang].findYourWay;
+            if (currentLang === 'zh') {
+                drawChineseText(doc, instruction, startX, startY - 10, 14, 'left');
+            } else {
+                doc.text(instruction, startX, startY - 10);
+            }
+            
+            drawMazePDF(doc, startX, startY, pdfSize, false);
+            
+            if (includeSolution) {
+                doc.addPage();
+                doc.setFontSize(20);
+                const solutionTitle = translations[currentLang].mazeSolution;
+                if (currentLang === 'zh') {
+                    drawChineseText(doc, solutionTitle, pageWidth / 2, 20, 20, 'center');
+                } else {
+                    doc.text(solutionTitle, pageWidth / 2, 20, { align: 'center' });
+                }
+                
+                doc.setFontSize(12);
+                yPos = 35;
+                infoTexts.forEach((text, index) => {
+                    if (currentLang === 'zh') {
+                        drawChineseText(doc, text, 20, yPos, 12, 'left');
+                    } else {
+                        doc.text(text, 20, yPos);
+                    }
+                    yPos += 7;
+                });
+                
+                doc.setFontSize(14);
+                const solutionInstruction = translations[currentLang].solutionPath;
+                if (currentLang === 'zh') {
+                    drawChineseText(doc, solutionInstruction, startX, startY - 10, 14, 'left');
+                } else {
+                    doc.text(solutionInstruction, startX, startY - 10);
+                }
+                
+                drawMazePDF(doc, startX, startY, pdfSize, true);
+            }
+            
+            const filename = includeSolution 
+                ? `maze_${mazeShape}_${mazeSize}x${mazeSize}_${sizePercent}pct_with_solution_${Date.now()}.pdf`
+                : `maze_${mazeShape}_${mazeSize}x${mazeSize}_${sizePercent}pct_${Date.now()}.pdf`;
+            
+            doc.save(filename);
+            showMessage(translations[currentLang].pdfDownloaded, '#4CAF50');
+        }
+
+        function drawChineseText(doc, text, x, y, fontSize, align = 'left') {
+            // Create a temporary canvas to render Chinese text
+            const tempCanvas = document.createElement('canvas');
+            const tempCtx = tempCanvas.getContext('2d');
+            
+            // Set canvas size based on text
+            tempCtx.font = `${fontSize * 4}px Arial, sans-serif`;
+            const metrics = tempCtx.measureText(text);
+            const textWidth = metrics.width;
+            const textHeight = fontSize * 5;
+            
+            tempCanvas.width = textWidth + 20;
+            tempCanvas.height = textHeight;
+            
+            // Draw text on canvas
+            tempCtx.fillStyle = 'white';
+            tempCtx.fillRect(0, 0, tempCanvas.width, tempCanvas.height);
+            tempCtx.fillStyle = 'black';
+            tempCtx.font = `${fontSize * 4}px Arial, sans-serif`;
+            tempCtx.textBaseline = 'middle';
+            tempCtx.fillText(text, 10, textHeight / 2);
+            
+            // Convert canvas to image and add to PDF
+            const imgData = tempCanvas.toDataURL('image/png');
+            const imgWidth = textWidth / 4 * 0.264583; // Convert px to mm
+            const imgHeight = textHeight / 4 * 0.264583;
+            
+            let xPos = x;
+            if (align === 'center') {
+                xPos = x - imgWidth / 2;
+            } else if (align === 'right') {
+                xPos = x - imgWidth;
+            }
+            
+            doc.addImage(imgData, 'PNG', xPos, y - imgHeight / 2, imgWidth, imgHeight);
+        }
+
+        function drawMazePDF(doc, x, y, size, includeSolution) {
+            const cellSize = size / mazeSize;
+            
+            doc.setLineWidth(0.5);
+            doc.setDrawColor(51, 51, 51);
+            
+            if (mazeShape === 'square') {
+                doc.rect(x, y, size, size);
+            } else if (mazeShape === 'circle') {
+                const centerX = x + size / 2;
+                const centerY = y + size / 2;
+                const radius = size / 2;
+                doc.circle(centerX, centerY, radius);
+            }
+            
+            const wallWidth = mazeSize >= 50 ? 0.15 : 0.3;
+            doc.setLineWidth(wallWidth);
+            
+            for (let row = 0; row < mazeSize; row++) {
+                for (let col = 0; col < mazeSize; col++) {
+                    if (!maze[row][col].valid) continue;
+                    
+                    const cx = x + col * cellSize;
+                    const cy = y + row * cellSize;
+                    const cell = maze[row][col];
+                    
+                    if (cell.walls.top) {
+                        doc.line(cx, cy, cx + cellSize, cy);
+                    }
+                    if (cell.walls.right) {
+                        doc.line(cx + cellSize, cy, cx + cellSize, cy + cellSize);
+                    }
+                    if (cell.walls.bottom) {
+                        doc.line(cx, cy + cellSize, cx + cellSize, cy + cellSize);
+                    }
+                    if (cell.walls.left) {
+                        doc.line(cx, cy, cx, cy + cellSize);
+                    }
+                }
+            }
+            
+            if (includeSolution && solutionPath.length > 1) {
+                doc.setDrawColor(255, 0, 0);
+                const pathWidth = mazeSize >= 50 ? 0.3 : 0.5;
+                doc.setLineWidth(pathWidth);
+                
+                for (let i = 0; i < solutionPath.length - 1; i++) {
+                    const from = solutionPath[i];
+                    const to = solutionPath[i + 1];
+                    const fromX = x + from.col * cellSize + cellSize / 2;
+                    const fromY = y + from.row * cellSize + cellSize / 2;
+                    const toX = x + to.col * cellSize + cellSize / 2;
+                    const toY = y + to.row * cellSize + cellSize / 2;
+                    doc.line(fromX, fromY, toX, toY);
+                }
+            }
+            
+            const markerRadius = mazeSize >= 50 ? cellSize / 4 : cellSize / 3;
+            const fontSize = Math.max(6, cellSize * 0.5);
+            
+            // Start marker
+            const sx = x + startPos.col * cellSize + cellSize / 2;
+            const sy = y + startPos.row * cellSize + cellSize / 2;
+            doc.setFillColor(76, 175, 80);
+            doc.circle(sx, sy, markerRadius, 'F');
+            doc.setTextColor(255, 255, 255);
+            doc.setFontSize(fontSize);
+            doc.text('S', sx, sy + fontSize / 3, { align: 'center' });
+            
+            // End marker
+            const ex = x + endPos.col * cellSize + cellSize / 2;
+            const ey = y + endPos.row * cellSize + cellSize / 2;
+            doc.setFillColor(244, 67, 54);
+            doc.circle(ex, ey, markerRadius, 'F');
+            doc.setTextColor(255, 255, 255);
+            doc.text('E', ex, ey + fontSize / 3, { align: 'center' });
+            
+            doc.setTextColor(0, 0, 0);
+        }
+    </script>
+</body>
+</html>
